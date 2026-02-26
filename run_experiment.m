@@ -4,6 +4,8 @@
 % win\afc\base for making the pop-up
 % 
 
+
+
 %% Parameters
 audiopath = "audio_clips";
 clipNames = ["F1F2_quiet_food_clip01"];     % audio clips to use
@@ -29,13 +31,11 @@ raw_results_time(n_trials) = Trial;                                         %acc
 rel_offsets = linspace(max_min_offset(1), max_min_offset(2),n_offsets);     %acesss with relative_offsets(offset_idx)
 abs_offsets = zeros(n_clips,n_offsets);                                     %access with absolute_offsets(clip_idx, offset_idx) 
 
-
-
 [t, audio, fs, idx_first, idx_second] = load_audio_clip(audiopath, clipNames(1), true);
 
 
 
 %%
 % Play full audio signal (L/R split)
-%soundsc(audio, fs)
-%pause(max(t) + 1)
+soundsc(audio, fs)
+pause(max(t) + 1)
