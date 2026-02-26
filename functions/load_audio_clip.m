@@ -1,4 +1,4 @@
-function [t, audio, fs, idx_first, idx_second] = load_audio_clip(audiopath,audio_clip_name, manual_gating)
+function clip = load_audio_clip(audiopath, audio_clip_name, manual_gating)
     %COMPUTE_SPEAKER_GAIN Summary of this function goes here
     %   Detailed explanation goes here
 
@@ -14,7 +14,6 @@ function [t, audio, fs, idx_first, idx_second] = load_audio_clip(audiopath,audio
 
     % Load manual labels and decode turns
     audio_clip_txt_file = fullfile(audiopath, audio_clip_name+"_labels_manual_rinor.txt");
-    audio_clip_txt_file
     if ~isfile(audio_clip_txt_file)
         error('Manual labels do not exist: %s', audio_clip_txt_file);
     end
@@ -52,4 +51,6 @@ function [t, audio, fs, idx_first, idx_second] = load_audio_clip(audiopath,audio
     tot_energy = sum(audio(1:ceil(end / 2), :) .^ 2);
     [~, idx_first] = max(tot_energy);
     idx_second = 3 - idx_first; % If first is 1, second is 2 and vice versa
+
+    clip = AudioClip(t, audio, fs, idx_first, idx_second);
 end
