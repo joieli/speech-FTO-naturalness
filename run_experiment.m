@@ -13,6 +13,9 @@ max_min_offset = [-500, 500];               % minimum and maximum offset in ms
 n_offsets = 3;                           % how many different offsets to test
 reps_per_offset_per_clip = 4;                        % how many repetitions of each offset to present the participant                        
 
+%ToDo: Input participant subjectId
+%Create .txt file linking suvject ID to intials/name
+
 n_clips = length(clipNames);
 n_trials = n_clips*n_offsets*reps_per_offset_per_clip;
 
@@ -56,7 +59,8 @@ for idx = 1:n_trials
     raw_results_table(clipIdx,offsetIdx, repIdx) = 100+idx; %ToDo:true or false
 end 
 
-
+%ToDo: Calculate average naturalness per clip per offset
+% ToDo: Output relevant data in a .mat file, csv, txt, etc
 
 %%
 % Play full audio signal (L/R split)
