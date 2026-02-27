@@ -19,6 +19,9 @@ addpath(rVADDir);
 stimuliDir = fullfile(projectRoot, 'audio_clips');
 addpath(stimuliDir);
 
+% Add results folder (for participant data)
+resultsDir = fullfile(projectRoot, 'results');
+addpath(resultsDir);
 
 % Display confirmation message
 disp('Project initialized successfully!');
@@ -27,3 +30,4 @@ disp('Added to path:');
 disp(['  - ' functionsDir]);
 disp(['  - ' rVADDir]);
 disp(['  - ' stimuliDir]);
+disp(['  - ' resultsDir]);

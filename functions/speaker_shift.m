@@ -1,13 +1,18 @@
-function [y_tot, y1, y2 t_new] = speaker_shift(audio, fs, t_shift)
+function [y_tot, y1, y2, t_new] = speaker_shift(audio, fs, t_shift)
 
     arguments
         audio (:, 2) double
         fs (1, 1) double {mustBePositive}
-        t_shift (1, 1) double {mustBeReal} = 0
+        t_shift (1, 1) double {mustBeReal} = 0 %in seconds
     end
 
     % Pad samples according to desired shift
     n_pad = ceil(abs(t_shift * fs)) + 1;
+
+    %ToDo: Make this a if/sles statement based on if the t_shift is
+    %negative or positive, if negative, we have to make the arrays shorter
+    %otherwise there is a really long silence at the beginning
+    
 
     % Pad audio signals
     y1_pad = [zeros(n_pad, 1); audio(:, 1); zeros(n_pad, 1)];
