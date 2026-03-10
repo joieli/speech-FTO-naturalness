@@ -1,4 +1,4 @@
-function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain)
+function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain) %in ms
     if nargin < 4
         noiseGain = 0.2;
     end
@@ -24,9 +24,15 @@ function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain)
         noise_gained = noiseGain * scale_factor_noise * noise;
         audio_shifted = audio_shifted + noise_gained;
     end
-    
+
+    %randomly swap left and right channels
+    if rand > 0.5
+        audio_shifted = audio_shifted(:, [2 1]); % swap left and right
+    end
+
+    % save the clip
     shiftedClip = AudioClip(t_shifted, audio_shifted, fs, idxFirst, idxSecond, audio_1, audio_2);
-    
+
     %play sound
     soundsc(shiftedClip.audio, shiftedClip.fs)
     pause(max(shiftedClip.t) + 1)

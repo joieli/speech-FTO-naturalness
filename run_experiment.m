@@ -10,7 +10,7 @@
 
 %Temp: Placeholders for the parameterse that need to be passed to the
 %function
-participant_initials = "JL";
+participant_initials = "test";
 participant_ID = "subject01";
 
 
@@ -19,9 +19,9 @@ rng(42);
 audiopath = "audio_clips";
 clipNames = ["F1F2_quiet_food_clip01"];     % audio clips to use
 resultspath = "results";
-max_min_offset = [-500, 500];               % minimum and maximum offset in ms
+max_min_offset = [-1000, 2000];               % minimum and maximum offset in ms
 n_offsets = 2;                           % how many different offsets to test
-reps_per_offset_per_clip = 2;                        % how many repetitions of each offset to present the participant                        
+reps_per_offset_per_clip = 1;                        % how many repetitions of each offset to present the participant                        
 
 %Create subject string
 fileBase = string(datetime('now'),'yyyyMMdd_HH_mm_ss') + "__" + participant_ID;
@@ -71,7 +71,7 @@ for idx = 1:n_trials
 
     % play the clip
     pause(1); %ToDo: adjust-- pause 1 second before playing clip
-    playShiftedAudio(clips(clipIdx), rel_offsets(offsetIdx), false);
+    playShiftedAudio(clips(clipIdx), rel_offsets(offsetIdx), true);
 
     % ToDo: Gather response - Change to a graphical interface
     pause(1); %ToDo: adjust-- puse 1 second before gethering response

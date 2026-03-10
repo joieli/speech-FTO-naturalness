@@ -1,4 +1,4 @@
-function [y_tot, y1, y2, t_new] = speaker_shift(audio, fs, t_shift)
+function [y_tot, y1, y2, t_new] = speaker_shift(audio, fs, t_shift) %in seconds
 
     arguments
         audio (:, 2) double
@@ -7,7 +7,7 @@ function [y_tot, y1, y2, t_new] = speaker_shift(audio, fs, t_shift)
     end
 
     % Pad samples according to desired shift
-    n_pad = ceil(abs(t_shift * fs)) + 1;
+    n_pad = ceil(abs(t_shift * fs)) + 1 + 2*fs; %pad by an additional fs samples so I get one second of sielence before and after
 
     %ToDo: Make this a if/sles statement based on if the t_shift is
     %negative or positive, if negative, we have to make the arrays shorter
@@ -26,10 +26,18 @@ function [y_tot, y1, y2, t_new] = speaker_shift(audio, fs, t_shift)
     % Return separated and combined signals
     y1 = audio_combined(:, 1);
     y2 = audio_combined(:, 2);
-    y_tot = sum(audio_combined, 2);
+    y_tot = audio_combined;
 
     % New time vector
     t = (1:size(audio, 1)) / fs;
     t_new = [(-fliplr(1:n_pad) / fs) t (max(t) + (1:n_pad) / fs)];
+
+    % Remove trailing and leading zeros, leaving a little for noise
+    y_sum = sum(audio_combined, 2);
+    idx = find(y_sum, 1, 'first')-fs-randi([0,floor(fs/2)]): find(y_sum, 1, 'last')+fs/4; %add some jitter to the front
+    y1 = y1(idx);
+    y2 = y2(idx);
+    y_tot = y_tot(idx,:);
+    t_new = t_new(idx);
 
 end
