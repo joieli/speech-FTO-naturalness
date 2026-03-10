@@ -1,4 +1,4 @@
-function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain) %in ms
+function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain) %relOffset in ms
     if nargin < 4
         noiseGain = 0.2;
     end
@@ -13,7 +13,7 @@ function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain) %in m
     % shift the audio
     T_shift = relOffset/1000; %convert ms to seconds
     [audio_shifted, audio_1, audio_2, t_shifted] = speaker_shift(audio(:, [idxFirst, idxSecond]), fs, T_shift);
-    
+
     %add noise if desired
     if noise == true
         % Generate white noise
