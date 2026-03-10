@@ -22,7 +22,7 @@ clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip06","F1F2_quiet_food_
 resultspath = "results";
 rel_offsets = [0];  %relative_offsets in ms, acesss with relative_offsets(offsetIdx)
 reps_per_offset_per_clip = 1;                          % how many repetitions of each offset to present the participant                        
-timeMe = false;
+timeMe = true;
 
 %Create subject string
 fileBase = string(datetime('now'),'yyyyMMdd_HH_mm_ss') + "__" + participant_ID;
@@ -78,7 +78,7 @@ for idx = 1:n_trials
     playShiftedAudio(clips(clipIdx), rel_offsets(offsetIdx), true);
 
     % ToDo: Gather response - Change to a graphical interface
-    pause(1);
+    pause(0.5);
     prompt = "Did the gap between the speakers sound natural? Answer 1 for yes. Answer 0 for no. \nAnswer: ";
     response = input(prompt);
     disp("   ");
@@ -92,7 +92,8 @@ end
 disp("EXPERIMENT DONE!")
 disp("     ")
 if timeMe
-    toc;
+    elaspsedTime = toc;
+    fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
 end
 
 %% Post Stuff
@@ -102,6 +103,6 @@ end
 
 %% Save the data into a .mat file
 dataFile = fullfile(resultspath,fileBase + ".mat");
-save(dataFile, "rel_offsets","abs_offsets","raw_results_time", "raw_results_table");
+save(dataFile, "rel_offsets","abs_offsets","raw_results_time", "raw_results_table", "elaspsedTime");
 fprintf("Data saved into: %s \n", dataFile);
 
