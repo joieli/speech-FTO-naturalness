@@ -21,26 +21,31 @@ participant_ID = "subject01";
 
 %% Parameters
 rng(42);
+%paths
 audiopath = "audio_clips";
-clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip02","F1F2_quiet_food_clip05"];     % audio clips to use, access with clipNames(clipIdx)
+clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip13"];     % audio clips to use, access with clipNames(clipIdx)
 resultspath = "results";
-rel_offsets = [0,250,500,750,1000,1250,1500,1750,2000,2250,2500];  %relative_offsets in ms, acesss with relative_offsets(offsetIdx)
-rel_offsets = [0,250,500,750];
-reps_per_offset_per_clip = 2;                          % how many repetitions of each offset to present the participant                        
-runTrain = true;
+%parameters
+abs_offsets = [0,2000];             %absolute_offsets in ms, acesss with abs_offsets(offsetIdx)
+reps_per_offset_per_clip = 1;                                       % how many repetitions of each offset to present the participant                        
 timeMe = true;
+%training
+runTrain = true;
+train_reps_per_clip = 2;
 
 %Create subject string
 fileBase = string(datetime('now'),'yyyyMMdd_HH_mm_ss') + "__" + participant_ID;
 
-n_offsets = length(rel_offsets);
+n_offsets = length(abs_offsets);
 n_clips = length(clipNames);
 n_trials = n_clips*n_offsets*reps_per_offset_per_clip;
 
 %% Creating placeholders to store data
-% create table to store audio clips
+% create table to store audio clips and data
 clips(n_clips) = AudioClip;                                                 %access with clips(clipIdx).property
-abs_offsets = zeros(n_clips,n_offsets);                                     %access with absolute_offsets(clipIdx, offsetIdx) 
+base_offsets = zeros(n_clips,1);                                               %access with base_offsets(clipIdx)
+rel_offsets = zeros(n_clips,n_offsets);                                     %access with rel_offsets(clipIdx, offsetIdx) 
+
 
 % create tables to store data
 raw_results_table = zeros(n_clips,n_offsets,reps_per_offset_per_clip);      %access with raw_results_table(clipIdx, offsetIdx,repIdx) - each table is a repetition, each row is a clip, each col is a different offset
@@ -49,22 +54,30 @@ raw_results_time(n_trials) = Trial;                                         %acc
 %% Load audios
 for clipIdx = 1:n_clips
     clips(clipIdx) = load_audio_clip(audiopath, clipNames(clipIdx), true);
-    base_offset = getBaseOffset(audiopath,clipNames(clipIdx));
-    abs_offsets(clipIdx, :) = rel_offsets + base_offset;
+    base_offsets(clipIdx) = getBaseOffset(audiopath,clipNames(clipIdx));
+    clips(clipIdx).base_offset = base_offsets(clipIdx);
+    rel_offsets(clipIdx, :) = abs_offsets-base_offsets(clipIdx);
 end
 
 %% get clip order
 clip_order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip);
 
-
 %% Experiment Begin - Go through the clips
 if timeMe
     tic;
 end
-fprintf("EXPERIMENT BEGINS: %s \n", fileBase);
+
+% Running two training trials
+n_train = 0;
+if runTrain == true
+    fprintf("PILOT BEGINS: %s \n", fileBase);
+    n_train = n_clips*train_reps_per_clip;
+    % ToDo:
+end
+
 
 for idx = 1:n_trials
-    fprintf("Trial: %d/%d \n",idx, n_trials);
+    fprintf("Trial: %d/%d \n",idx+n_train, n_trials+n_train);
 
     % populate the trial data
     clip_number = clip_order(idx);  %which clip parameters are we using
@@ -72,17 +85,18 @@ for idx = 1:n_trials
     raw_results_time(idx).clipIdx = clipIdx;
     raw_results_time(idx).clipName = clipNames(clipIdx);
     raw_results_time(idx).offsetIdx = offsetIdx;
-    raw_results_time(idx).relOffset = rel_offsets(offsetIdx);
-    raw_results_time(idx).absOffset = abs_offsets(clipIdx, offsetIdx);
+    raw_results_time(idx).relOffset = rel_offsets(clipIdx, offsetIdx);
+    raw_results_time(idx).absOffset = abs_offsets(offsetIdx);
+    raw_results_time(idx).baseOffset = base_offsets(clipIdx);
     raw_results_time(idx).repIdx = repIdx;
 
     % play the clip
     pause(1);
-    playShiftedAudio(clips(clipIdx), rel_offsets(offsetIdx), true);
+    playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
 
     % ToDo: Gather response - Change to a graphical interface
     pause(0.5);
-    prompt = "Did the gap between the speakers sound natural? Answer 1 for yes. Answer 0 for no. \nAnswer: ";
+    prompt = "Did the gap between the speakers hae a natural length (ie. not too long or not too short)? Answer 1 for yes. Answer 0 for no. \nAnswer: ";
     response = input(prompt);
     disp("   ");
 
@@ -113,6 +127,6 @@ fclose(file);
 
 %save data
 dataFile = fullfile(resultspath,fileBase + ".mat");
-save(dataFile, "rel_offsets","abs_offsets","raw_results_time", "raw_results_table", "elaspsedTime");
+save(dataFile, "participant_ID","rel_offsets","abs_offsets","base_offsets","clipNames","raw_results_time", "raw_results_table", "elaspsedTime");
 fprintf("Data saved into: %s \n", dataFile);
 
