@@ -7,7 +7,7 @@
 % win\afc\base for making the pop-up
 
 
-% function run_experiment(participant_initials, participant_ID)
+% function run_pilot(participant_initials, participant_ID)
 %     putCodeHere!!
 % end
 
