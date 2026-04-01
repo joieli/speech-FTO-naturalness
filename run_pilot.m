@@ -30,7 +30,7 @@ resultspath = "results";
 %parameters
 abs_offsets = {0,750,1500,2250,3000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
 abs_offsets = {0,500,1000,1500,2000,"base"};
-abs_offsets = {0,1000,"base"};
+abs_offsets = {0,1000,2000,"base"};
 reps_per_offset_per_clip = 3;                                       % how many repetitions of each offset to present the participant                        
 timeMe = true;
 %training
@@ -52,7 +52,7 @@ rel_offsets = zeros(n_clips,n_offsets);                                     %acc
 
 
 % create tables to store data
-raw_results_table = zeros(n_clips,n_offsets,reps_per_offset_per_clip);    %access with raw_results_table(clipIdx, offsetIdx,repIdx) - each table is a repetition, each row is a clip, each col is a different offset 
+raw_results_table = zeros(n_clips,n_offsets,train_reps_per_clip);    %access with raw_results_table(clipIdx, offsetIdx,repIdx) - each table is a repetition, each row is a clip, each col is a different offset 
                                                                             %access the base offset with raw_results_table(clipIdx, end,repIdx)
 raw_results_time(n_trials) = Trial;                                         %access with raw_results_time(idx).property
 
@@ -81,7 +81,30 @@ n_train = 0;
 if runTrain == true
     fprintf("PILOT BEGINS: %s \n", fileBase);
     n_train = n_clips*train_reps_per_clip;
+    
     % ToDo:
+    % get the clip order
+    train_order = getTrainOrder(n_clips, n_offsets, train_reps_per_clip);
+
+    for idx = 1:n_train
+        fprintf("Trial: %d/%d \n",idx, n_trials+n_train);
+
+        %get trial data
+        clip_number = train_order(idx);  %which clip parameters are we using
+        [clipIdx,offsetIdx, repIdx] = ind2sub(size(raw_results_table),clip_number);
+
+        % play the clip
+        pause(1);
+        playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
+
+        % ToDo: Gather response - Change to a graphical interface
+        pause(0.5);
+        prompt = "Did the gap between the speakers hae a natural length (ie. not too long or not too short)? Answer 1 for yes. Answer 0 for no. \nAnswer: ";
+        response = input(prompt);
+        disp("   ");
+
+        % do not log response
+    end
 end
 
 
