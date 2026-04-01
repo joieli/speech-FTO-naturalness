@@ -14,7 +14,7 @@ function [y_tot, y1, y2, t_new] = speaker_shift(audio, fs, t_shift) %in seconds
     y2_pad = [zeros(n_pad, 1); audio(:, 2); zeros(n_pad, 1)];
 
     % Shift audio signals
-    audio_combined = [y1_pad circshift(y2_pad, t_shift * fs)];
+    audio_combined = [y1_pad circshift(y2_pad, ceil(t_shift * fs))];
     idx_start = 1;
     idx_end = size(audio_combined, 1);
 

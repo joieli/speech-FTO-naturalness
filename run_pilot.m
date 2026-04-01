@@ -23,7 +23,8 @@ participant_ID = "subject01";
 rng(42);
 %paths
 audiopath = "audio_clips";
-clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip13"];     % audio clips to use, access with clipNames(clipIdx)
+clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07","F1F2_quiet_food_clip08"...
+    ,"F1F2_quiet_food_clip11", "F1F2_quiet_food_clip13", "F1F2_quiet_food_clip14", "F1F2_quiet_food_clip17"];     % audio clips to use, access with clipNames(clipIdx)
 resultspath = "results";
 %parameters
 abs_offsets = [0,2000];             %absolute_offsets in ms, acesss with abs_offsets(offsetIdx)
