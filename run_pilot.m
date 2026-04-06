@@ -1,6 +1,4 @@
 %% THIS IS THE PILOT
-
-%% What files to look into for reference
 % function run_pilot(participant_initials, participant_ID)
 %     putCodeHere!!
 % end
@@ -9,8 +7,8 @@
 %Temp: Placeholders for the parameterse that need to be passed to the
 %function
 clear; clc; close all;
-participant_initials = 'test';
-participant_ID = 'subject01';
+participant_initials = 'jl';
+participant_ID = 'subject02';
 
 
 %% Parameters
@@ -20,21 +18,20 @@ rng(42);
 audiopath = "audio_clips";
 clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07","F1F2_quiet_food_clip08"...
     ,"F1F2_quiet_food_clip11", "F1F2_quiet_food_clip13", "F1F2_quiet_food_clip14", "F1F2_quiet_food_clip17"];     % audio clips to use, access with clipNames(clipIdx)
-clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07"];
+%clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07"];
 resultspath = "results";
 
 %parameters
-abs_offsets = {0,750,1500,2250,3000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
-abs_offsets = {0,500,1000,1500,2000,"base"};
-abs_offsets = {0,"base"};
-reps_per_offset_per_clip = 3;                                       % how many repetitions of each offset to present the participant                        
-reps_per_offset_per_clip = 1;
+abs_offsets = {0,400,800,1200,1600,2000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
+%abs_offsets = {0,"base"};
+reps_per_offset_per_clip = 4;                                       % how many repetitions of each offset to present the participant                        
+%reps_per_offset_per_clip = 1;
 timeMe = true;
 
 %training
 runTrain = true;
 train_reps_per_clip = 2;
-train_reps_per_clip = 1;
+%train_reps_per_clip = 1;
 
 %Create subject string
 fileBase = string(datetime('now'),'yyyyMMdd_HH_mm_ss') + "__" + participant_ID;
@@ -174,6 +171,3 @@ waitForResponse(gui);
 if exist('gui','var') && isvalid(gui.fig)
     delete(gui.fig);
 end
-
-%% Basic Processing
-%ToDo: Calculate average naturalness per clip per offset
