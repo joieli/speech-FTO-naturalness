@@ -1,12 +1,6 @@
 %% THIS IS THE PILOT
 
 %% What files to look into for reference
-
-% Signal Processing SDT: afc_main in
-% C:\Users\joiel\OneDrive\Documents\22003 SIgnal Processing\02_SDT\SDT
-% win\afc\base for making the pop-up
-
-
 % function run_pilot(participant_initials, participant_ID)
 %     putCodeHere!!
 % end
@@ -15,27 +9,32 @@
 %Temp: Placeholders for the parameterse that need to be passed to the
 %function
 clear; clc; close all;
-participant_initials = "test";
-participant_ID = "subject01";
+participant_initials = 'test';
+participant_ID = 'subject01';
 
 
 %% Parameters
 rng(42);
+
 %paths
 audiopath = "audio_clips";
 clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07","F1F2_quiet_food_clip08"...
     ,"F1F2_quiet_food_clip11", "F1F2_quiet_food_clip13", "F1F2_quiet_food_clip14", "F1F2_quiet_food_clip17"];     % audio clips to use, access with clipNames(clipIdx)
 clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07"];
 resultspath = "results";
+
 %parameters
 abs_offsets = {0,750,1500,2250,3000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
 abs_offsets = {0,500,1000,1500,2000,"base"};
-abs_offsets = {0,1000,2000,"base"};
+abs_offsets = {0,"base"};
 reps_per_offset_per_clip = 3;                                       % how many repetitions of each offset to present the participant                        
+reps_per_offset_per_clip = 1;
 timeMe = true;
+
 %training
 runTrain = true;
 train_reps_per_clip = 2;
+train_reps_per_clip = 1;
 
 %Create subject string
 fileBase = string(datetime('now'),'yyyyMMdd_HH_mm_ss') + "__" + participant_ID;
@@ -52,8 +51,7 @@ rel_offsets = zeros(n_clips,n_offsets);                                     %acc
 
 
 % create tables to store data
-raw_results_table = zeros(n_clips,n_offsets,train_reps_per_clip);    %access with raw_results_table(clipIdx, offsetIdx,repIdx) - each table is a repetition, each row is a clip, each col is a different offset 
-                                                                            %access the base offset with raw_results_table(clipIdx, end,repIdx)
+raw_results_table = NaN(n_clips,n_offsets,train_reps_per_clip);    %access with raw_results_table(clipIdx, offsetIdx,repIdx) - each table is a repetition, each row is a clip, each col is a different offset 
 raw_results_time(n_trials) = Trial;                                         %access with raw_results_time(idx).property
 
 %% Load audios
@@ -68,48 +66,57 @@ for clipIdx = 1:n_clips
     end
 end
 
-%% get clip order
-clip_order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip);
 
 %% Experiment Begin - Go through the clips
+%get clip order
+clip_order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip);
+
+% Exerpiment start
+fprintf("PILOT BEGINS: %s \n", fileBase);
+
+%create gui
+gui = createResponseGUI();
+updateResponseGUI(gui,'start');
+gui.trialText.String = participant_initials;
+waitForResponse(gui);
+
+% start timer
 if timeMe
     tic;
 end
 
-% Running two training trials
+% Running training trials
 n_train = 0;
 if runTrain == true
-    fprintf("PILOT BEGINS: %s \n", fileBase);
     n_train = n_clips*train_reps_per_clip;
     
-    % ToDo:
     % get the clip order
     train_order = getTrainOrder(n_clips, n_offsets, train_reps_per_clip);
 
     for idx = 1:n_train
-        fprintf("Trial: %d/%d \n",idx, n_trials+n_train);
+        gui.trialText.String = sprintf("Trial: %d/%d \n",idx, n_trials+n_train);
 
         %get trial data
         clip_number = train_order(idx);  %which clip parameters are we using
         [clipIdx,offsetIdx, repIdx] = ind2sub(size(raw_results_table),clip_number);
 
         % play the clip
-        pause(1);
+        updateResponseGUI(gui, 'playing', sprintf("Trial: %d/%d \n",idx, n_trials+n_train));
+        pause(0.75);
         playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
 
-        % ToDo: Gather response - Change to a graphical interface
+        %Gather response
         pause(0.5);
-        prompt = "Did the gap between the speakers hae a natural length (ie. not too long or not too short)? Answer 1 for yes. Answer 0 for no. \nAnswer: ";
-        response = input(prompt);
-        disp("   ");
+        updateResponseGUI(gui, 'question');
+        response = waitForResponse(gui);
 
         % do not log response
     end
 end
 
-
+% running actual experiment
 for idx = 1:n_trials
-    fprintf("Trial: %d/%d \n",idx+n_train, n_trials+n_train);
+    gui.trialText.String = sprintf("Trial: %d/%d \n",idx+n_train, n_trials+n_train);
 
     % populate the trial data
     clip_number = clip_order(idx);  %which clip parameters are we using
@@ -123,42 +130,50 @@ for idx = 1:n_trials
     raw_results_time(idx).repIdx = repIdx;
 
     % play the clip
+    updateResponseGUI(gui, 'playing', sprintf("Trial: %d/%d \n",idx+n_train, n_trials+n_train));
     pause(1);
     playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
 
-    % ToDo: Gather response - Change to a graphical interface
-    pause(0.5);
-    prompt = "Did the gap between the speakers hae a natural length (ie. not too long or not too short)? Answer 1 for yes. Answer 0 for no. \nAnswer: ";
-    response = input(prompt);
-    disp("   ");
+    %Gather response
+    pause(0.75);
+    updateResponseGUI(gui, 'question');
+    response = waitForResponse(gui);
 
     %Log response
     raw_results_time(idx).soundsNatural = response;
     raw_results_table(clipIdx,offsetIdx, repIdx) = response;
 end 
 
-%%
 disp("EXPERIMENT DONE!")
 disp("     ")
+
+%stop timer
 if timeMe
     elaspsedTime = toc;
     fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
 end
 
-%% Post Stuff
-
-%% Basic Process
-%ToDo: Calculate average naturalness per clip per offset
-
-%% Save the data into a .mat file
-%Create entry in participant_key 
+% Save participant data
 keyPath = fullfile(resultspath, "participant_key.txt");
 file = fopen(keyPath, 'a+');
 fprintf(file, sprintf('%s \t \t %s \n', participant_initials, fileBase));
 fclose(file);
 
-%save data
+%save trial data
 dataFile = fullfile(resultspath,fileBase + ".mat");
 save(dataFile, "participant_ID","rel_offsets","abs_offsets","base_offsets","clipNames","raw_results_time", "raw_results_table", "elaspsedTime");
 fprintf("Data saved into: %s \n", dataFile);
 
+% end experiment
+pause(0.75);
+updateResponseGUI(gui,'disable');
+updateResponseGUI(gui,'end');
+waitForResponse(gui);
+
+% close window
+if exist('gui','var') && isvalid(gui.fig)
+    delete(gui.fig);
+end
+
+%% Basic Processing
+%ToDo: Calculate average naturalness per clip per offset

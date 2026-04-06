@@ -53,7 +53,7 @@ function order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip)
             while length(bag) == bag_size     %until we find a slot for this element
                 attempts = attempts + 1;
                 if(attempts > 2*numel(order))
-                    throw("Too many attempts in creating order")
+                    error("Too many attempts in creating order")
                 end
                 clip_idx = randi(numel(order)-2,1);
                 prevClip = mod(order(clip_idx),n_clips);     

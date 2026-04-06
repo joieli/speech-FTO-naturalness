@@ -10,7 +10,7 @@ function order = getTrainOrder(n_clips, n_offsets, train_reps_per_clip)
         while segment(1) == last_clip
             attempts = attempts + 1;
             if attempts > factorial(n_clips)*2
-                throw("Too many attempts in creating training clip order")
+                error("Too many attempts in creating training clip order")
             end
             segment = randperm(n_clips);
         end

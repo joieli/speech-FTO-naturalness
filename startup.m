@@ -23,6 +23,14 @@ addpath(stimuliDir);
 resultsDir = fullfile(projectRoot, 'results');
 addpath(resultsDir);
 
+% Add gui folder
+guiDir = fullfile(projectRoot, 'gui');
+addpath(guiDir);
+
+% Add classes folder
+classesDir = fullfile(projectRoot, 'classes');
+addpath(classesDir);
+
 % Display confirmation message
 disp('Project initialized successfully!');
 disp(['Project root: ' projectRoot]);
@@ -31,3 +39,5 @@ disp(['  - ' functionsDir]);
 disp(['  - ' rVADDir]);
 disp(['  - ' stimuliDir]);
 disp(['  - ' resultsDir]);
+disp(['  - ' guiDir]);
+disp(['  - ' classesDir]);
