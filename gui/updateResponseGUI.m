@@ -8,8 +8,11 @@ function updateResponseGUI(gui, mode, trialLabel)
     switch lower(mode)
 
         case 'start'
-            gui.questionText.String = ...
-                'Press any key or button to start the experiment';
+            gui.questionText.String = {
+                'Adjust your volume while listening to the white noise.'
+                ''
+                'Press 1 or 0 to begin'
+            };
             gui.questionText.FontSize = 16;
         
             set(gui.yesButton,'Enable','on');
@@ -19,22 +22,25 @@ function updateResponseGUI(gui, mode, trialLabel)
         
             setappdata(gui.fig,'mode','start');
         
-        case 'disable'
-            gui.questionText.String = ...
-                'Experiment complete. Press any key or button to end';
+        case 'break'
+            gui.questionText.String = {
+                'Break.'
+                ''
+                'Press 1 or 0 to continue'
+            };
             gui.questionText.FontSize = 16;
-
-            % Disable buttons to remove focus
-            set(gui.yesButton, 'Enable', 'off');
-            set(gui.noButton,  'Enable', 'off');
-
-            % remove focus
-            setappdata(gui.fig,'mode','end');
         
+            set(gui.yesButton,'Enable','on');
+            set(gui.noButton,'Enable','on');
+        
+            setappdata(gui.fig,'mode','break');
         
         case 'end'
-            gui.questionText.String = ...
-                'Experiment complete. Press any key or button to end';
+            gui.questionText.String = {
+                'Experiment complete.'
+                ''
+                'Press 1 or 0 to end'
+            };
             gui.questionText.FontSize = 16;
 
             % reneable buttons
@@ -58,7 +64,7 @@ function updateResponseGUI(gui, mode, trialLabel)
         case 'question'
             % Restore question
             gui.questionText.String = ...
-                'Did the pause between the speakers sound natural?';
+                'Did the pause between the speakers sound UNNATURAL in length (too long or too short)?';
             gui.questionText.FontSize = 14;
 
             % Enable buttons after audio
@@ -66,6 +72,19 @@ function updateResponseGUI(gui, mode, trialLabel)
             set(gui.noButton,  'Enable', 'on');
 
             setappdata(gui.fig,'mode','question');
+
+        
+        case 'disable'
+            gui.questionText.String = ...
+                '-';
+            gui.questionText.FontSize = 16;
+
+            % Disable buttons to remove focus
+            set(gui.yesButton, 'Enable', 'off');
+            set(gui.noButton,  'Enable', 'off');
+
+            % remove focus
+            setappdata(gui.fig,'mode','end');
 
         otherwise
             error('Unknown GUI mode: %s', mode);

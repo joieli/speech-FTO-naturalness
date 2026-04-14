@@ -4,7 +4,7 @@ function gui = createResponseGUI()
     gui.ready = false;
 
     gui.fig = figure( ...
-        'Position',[100 100 500 250], ...
+        'Position',[100 100 500 320], ...
         'MenuBar','none', ...
         'ToolBar','none', ...
         'Name','Participant Response', ...
@@ -19,8 +19,8 @@ function gui = createResponseGUI()
 
     gui.questionText = uicontrol( ...
         'Style','text', ...
-        'String','Did the pause sound natural?', ...
-        'Position',[50 160 400 50], ...
+        'String','PLACEHOLDER', ...
+        'Position',[50 140 400 120], ...
         'FontSize',14, ...
         'BackgroundColor','white');
 
@@ -41,7 +41,7 @@ function gui = createResponseGUI()
     gui.trialText = uicontrol( ...
         'Style','text', ...
         'String','Trial 0', ...
-        'Position',[180 220 140 20], ...
+        'Position',[140 290 220 20], ...
         'FontSize',12, ...
         'BackgroundColor','white');
 
@@ -61,7 +61,7 @@ function gui = createResponseGUI()
             case 'question'
                 setappdata(gui.fig,'response',val);
     
-            case {'start','end'}
+            case {'start','end','break'}
                 setappdata(gui.fig,'response','CONTINUE');
         end
     end
@@ -69,18 +69,25 @@ function gui = createResponseGUI()
     function keyPressCallback(~, event)
         mode = getappdata(gui.fig,'mode');
     
+        % Only accept literal 0 or 1 characters
+        ch = event.Character;
+    
+        if ~(strcmp(ch,'0') || strcmp(ch,'1'))
+            return;   % ignore everything else, including volume keys
+        end
+    
         switch mode
             case 'question'
-                switch event.Key
-                    case {'1','numpad1'}
-                        setappdata(gui.fig,'response',1);
-                    case {'0','numpad0'}
-                        setappdata(gui.fig,'response',0);
+                if strcmp(ch,'1')
+                    setappdata(gui.fig,'response',1);
+                elseif strcmp(ch,'0')
+                    setappdata(gui.fig,'response',0);
                 end
     
-            case {'start','end'}
-                % any key continues
+            case {'start','end', 'break'}
                 setappdata(gui.fig,'response','CONTINUE');
+            otherwise
+                return;
         end
     end
 end

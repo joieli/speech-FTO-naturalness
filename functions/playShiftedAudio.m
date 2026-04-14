@@ -1,6 +1,6 @@
 function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain) %relOffset in ms
     if nargin < 4
-        noiseGain = 0.2;
+        noiseGain = 0.3;
     end
 
     % Getting details of the audio clip
@@ -36,6 +36,9 @@ function shiftedClip = playShiftedAudio(clip, relOffset, noise, noiseGain) %relO
     shiftedClip = AudioClip(t_shifted, audio_shifted, fs, idxFirst, idxSecond, audio_1, audio_2, base_offset, relOffset);
 
     %play sound
+    %clipPlayer = audioplayer(shiftedClip.audio, shiftedClip.fs);
+    %playblocking(clipPlayer)
+
     soundsc(shiftedClip.audio, shiftedClip.fs)
     pause(max(shiftedClip.t) + 1)
 end
