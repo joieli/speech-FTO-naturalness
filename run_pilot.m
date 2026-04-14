@@ -12,21 +12,23 @@ participant_ID = 'subject01';
 
 
 %% Parameters
-rng(42);
+rng(20260414);
 
 %paths
 resultspath = "results";
 audiopath = "audio_clips";
 clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07","F1F2_quiet_food_clip08"...
     ,"F1F2_quiet_food_clip11", "F1F2_quiet_food_clip13", "F1F2_quiet_food_clip14", "F1F2_quiet_food_clip17"];     % audio clips to use, access with clipNames(clipIdx)
-clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07"];
+%clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_clip07"];
 
 %parameters
 abs_offsets = {0,400,800,1200,1600,2000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
-abs_offsets = {2000,"base"};
+abs_offsets = {0,350,700,1050,1400,1750,2100,2450,"base"};
+%abs_offsets = {2000,"base"};
 
 reps_per_offset_per_clip = 4;                                       % how many repetitions of each offset to present the participant                        
-reps_per_offset_per_clip = 2;
+reps_per_offset_per_clip = 3; 
+%reps_per_offset_per_clip = 2;
 
 timeMe = true;
 n_breaks = 3;
@@ -87,128 +89,146 @@ curBlock = 1;
 %% Experiment Begin - Go through the clips
 fprintf("PILOT BEGINS: %s \n", fileBase);
 
-%create gui
-gui = createResponseGUI();
-gui.trialText.String = sprintf("Participant: %s \n",participant_initials);
-
-%start white noise to adjust volume
-Fs = 44100;          % sample rate
-noiseDuration = 60;  % long enough so it loops for a while
-whiteNoise = randn(Fs * noiseDuration, 1);
-whiteNoise = 0.06 * whiteNoise / max(abs(whiteNoise));
-noisePlayer = audioplayer(whiteNoise, Fs);
-
-updateResponseGUI(gui,'start');
-play(noisePlayer); % start white noise
-waitForResponse(gui);
-stop(noisePlayer); %stop the white noise after the response
-
-% start timer
-if timeMe
-    tic;
-end
-
-% Running training trials
-if runTrain == true
-    for idx = 1:n_train
-        % Check if we need to take a break
-        if ismember(idx, break_points)
-            curBlock = curBlock + 1; %advance the counter to the next block
-
-            gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
+    try
+    %create gui
+    gui = createResponseGUI();
+    gui.trialText.String = sprintf("Participant: %s \n",participant_initials);
+    
+    %start white noise to adjust volume
+    Fs = 44100;          % sample rate
+    noiseDuration = 60;  % long enough so it loops for a while
+    whiteNoise = randn(Fs * noiseDuration, 1);
+    whiteNoise = 0.06 * whiteNoise / max(abs(whiteNoise));
+    noisePlayer = audioplayer(whiteNoise, Fs);
+    
+    updateResponseGUI(gui,'start');
+    play(noisePlayer); % start white noise
+    waitForResponse(gui);
+    stop(noisePlayer); %stop the white noise after the response
+    
+    % start timer
+    if timeMe
+        tic;
+    end
+    
+    % Running training trials
+    if runTrain == true
+        for idx = 1:n_train
+            % Check if we need to take a break
+            if ismember(idx, break_points)
+                curBlock = curBlock + 1; %advance the counter to the next block
+    
+                gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
+                
+                updateResponseGUI(gui,'disable'); % this gets rid of previous buttons highlights
+                updateResponseGUI(gui,'break');
+                waitForResponse(gui);
+            end
             
-            updateResponseGUI(gui,'disable'); % this gets rid of previous buttons highlights
+            gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
+    
+            %get trial data
+            clip_number = train_order(idx);  %which clip parameters are we using
+            [clipIdx,offsetIdx, repIdx] = ind2sub(size(raw_results_table),clip_number);
+    
+            % play the clip
+            updateResponseGUI(gui, 'playing');
+            pause(0.75);
+            playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
+    
+            %Gather response
+            pause(0.75);
+            updateResponseGUI(gui, 'question');
+            response = waitForResponse(gui);
+    
+            % do not log response
+        end
+    end
+    
+    % running actual experiment
+    for idx = 1:n_trials
+        % check if we need to take a break
+        if ismember(idx+n_train, break_points)
+            curBlock = curBlock + 1;
+            gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
+    
+            updateResponseGUI(gui,'disable'); % this gets rid of previous button highlights
             updateResponseGUI(gui,'break');
             waitForResponse(gui);
         end
         
         gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
-
-        %get trial data
-        clip_number = train_order(idx);  %which clip parameters are we using
-        [clipIdx,offsetIdx, repIdx] = ind2sub(size(raw_results_table),clip_number);
-
+    
+        % populate the trial data
+        clip_number = clip_order(idx);  %which clip parameters are we using
+        [clipIdx,offsetIdx, repIdx] = ind2sub(size(raw_results_table),clip_number); % where is the clip located in the table
+        raw_results_time(idx).clipIdx = clipIdx;
+        raw_results_time(idx).clipName = clipNames(clipIdx);
+        raw_results_time(idx).offsetIdx = offsetIdx;
+        raw_results_time(idx).relOffset = rel_offsets(clipIdx, offsetIdx);
+        raw_results_time(idx).absOffset = abs_offsets{offsetIdx};
+        raw_results_time(idx).baseOffset = base_offsets(clipIdx);
+        raw_results_time(idx).repIdx = repIdx;
+    
         % play the clip
         updateResponseGUI(gui, 'playing');
-        pause(0.75);
+        pause(1);
         playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
-
+    
         %Gather response
         pause(0.75);
         updateResponseGUI(gui, 'question');
         response = waitForResponse(gui);
-
-        % do not log response
-    end
-end
-
-% running actual experiment
-for idx = 1:n_trials
-    % check if we need to take a break
-    if ismember(idx+n_train, break_points)
-        curBlock = curBlock + 1;
-        gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
-
-        updateResponseGUI(gui,'disable'); % this gets rid of previous button highlights
-        updateResponseGUI(gui,'break');
-        waitForResponse(gui);
+    
+        %Log response
+        raw_results_time(idx).soundsNatural = response;
+        raw_results_table(clipIdx,offsetIdx, repIdx) = response;
+    end 
+    
+    disp("EXPERIMENT DONE!")
+    disp("     ")
+    
+    %stop timer
+    if timeMe
+        elaspsedTime = toc;
+        fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
     end
     
-    gui.trialText.String = sprintf("Block: %d/%d \n",curBlock, n_breaks+1);
-
-    % populate the trial data
-    clip_number = clip_order(idx);  %which clip parameters are we using
-    [clipIdx,offsetIdx, repIdx] = ind2sub(size(raw_results_table),clip_number); % where is the clip located in the table
-    raw_results_time(idx).clipIdx = clipIdx;
-    raw_results_time(idx).clipName = clipNames(clipIdx);
-    raw_results_time(idx).offsetIdx = offsetIdx;
-    raw_results_time(idx).relOffset = rel_offsets(clipIdx, offsetIdx);
-    raw_results_time(idx).absOffset = abs_offsets{offsetIdx};
-    raw_results_time(idx).baseOffset = base_offsets(clipIdx);
-    raw_results_time(idx).repIdx = repIdx;
-
-    % play the clip
-    updateResponseGUI(gui, 'playing');
-    pause(1);
-    playShiftedAudio(clips(clipIdx), rel_offsets(clipIdx,offsetIdx), true);
-
-    %Gather response
+    % Save participant data
+    keyPath = fullfile(resultspath, "pilot_participant_key.txt");
+    file = fopen(keyPath, 'a+');
+    fprintf(file, sprintf('%s \t \t %s \t \t pilot\n', participant_initials, fileBase));
+    fclose(file);
+    
+    %save trial data
+    dataFile = fullfile(resultspath,fileBase + "_pilot.mat");
+    save(dataFile, "participant_ID","rel_offsets","abs_offsets","base_offsets","clipNames","raw_results_time", "raw_results_table", "elaspsedTime");
+    fprintf("Data saved into: %s \n", dataFile);
+    
+    % end experiment
     pause(0.75);
-    updateResponseGUI(gui, 'question');
-    response = waitForResponse(gui);
+    updateResponseGUI(gui,'disable'); % this gets ris of previous buttons highlights
+    updateResponseGUI(gui,'end');
+    waitForResponse(gui);
+    
+    % close window
+    if exist('gui','var') && isvalid(gui.fig)
+        delete(gui.fig);
+    end
+catch ME
+    disp("Experiment crashed — saving backup...");
 
-    %Log response
-    raw_results_time(idx).soundsNatural = response;
-    raw_results_table(clipIdx,offsetIdx, repIdx) = response;
-end 
+    if timeMe
+        elaspsedTime = toc;
+        fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
+    end
 
-disp("EXPERIMENT DONE!")
-disp("     ")
+    keyPath = fullfile(resultspath, "pilot_participant_key.txt");
+    file = fopen(keyPath, 'a+');
+    fprintf(file, sprintf('%s \t \t %s \t \t CRASH\n', participant_initials, fileBase));
+    fclose(file);
 
-%stop timer
-if timeMe
-    elaspsedTime = toc;
-    fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
-end
-
-% Save participant data
-keyPath = fullfile(resultspath, "participant_key.txt");
-file = fopen(keyPath, 'a+');
-fprintf(file, sprintf('%s \t \t %s \n', participant_initials, fileBase));
-fclose(file);
-
-%save trial data
-dataFile = fullfile(resultspath,fileBase + ".mat");
-save(dataFile, "participant_ID","rel_offsets","abs_offsets","base_offsets","clipNames","raw_results_time", "raw_results_table", "elaspsedTime");
-fprintf("Data saved into: %s \n", dataFile);
-
-% end experiment
-pause(0.75);
-updateResponseGUI(gui,'disable'); % this gets ris of previous buttons highlights
-updateResponseGUI(gui,'end');
-waitForResponse(gui);
-
-% close window
-if exist('gui','var') && isvalid(gui.fig)
-    delete(gui.fig);
+    dataFile = fullfile(resultspath,fileBase + "_pilotCRASH.mat");
+    save(dataFile, "participant_ID","rel_offsets","abs_offsets","base_offsets","clipNames","raw_results_time", "raw_results_table", "elaspsedTime", "ME");
+    fprintf("Data saved into: %s \n", dataFile);
 end

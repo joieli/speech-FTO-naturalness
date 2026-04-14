@@ -64,7 +64,7 @@ function updateResponseGUI(gui, mode, trialLabel)
         case 'question'
             % Restore question
             gui.questionText.String = ...
-                'Did the pause between the speakers sound UNNATURAL in length (too long or too short)?';
+                'Did the pause between the speakers sound NATURAL in length (not too long and not too short)?';
             gui.questionText.FontSize = 14;
 
             % Enable buttons after audio
