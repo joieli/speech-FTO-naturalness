@@ -1,5 +1,7 @@
 close all;
-load("results\20260414_08_57_25__subject03_pilot.mat")
+load("results\20260414_08_57_25__subject03_pilot.mat");
+load("results\20260417_14_05_18__subject04_pilot.mat");
+load("results\20260417_16_12_37__subject05_pilot.mat");
 
 means = mean(raw_results_table,3);
 stds = std(raw_results_table,0,3); %normalizing by N-1 for the unbiased estimator

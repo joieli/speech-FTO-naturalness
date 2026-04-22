@@ -33,7 +33,7 @@ addpath(classesDir);
 
 % Add rinor folder
 rinorDir = fullfile(projectRoot, 'rinor-matlab-tools-main');
-addpath(rinorDir);
+addpath(genpath(rinorDir));
 
 % Display confirmation message
 disp('Project initialized successfully!');
