@@ -10,9 +10,8 @@ clear; clc; close all;
 participant_initials = 'test';
 participant_ID = 'subject01';
 
-
 %% Parameters
-rng(20260414);
+rng(123456789);
 
 %paths
 resultspath = "results";
@@ -23,12 +22,13 @@ clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_
 
 %parameters
 abs_offsets = {0,400,800,1200,1600,2000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
-abs_offsets = {0,350,700,1050,1400,1750,2100,2450,"base"};
+abs_offsets = {0,100,300,500,800,1200,1600,2100,"base"};
+abs_offsets = {0,500,800,1200,1600,2000,"base"};
 %abs_offsets = {2000,"base"};
 
-reps_per_offset_per_clip = 4;                                       % how many repetitions of each offset to present the participant                        
+reps_per_offset_per_clip = 4;                                % how many repetitions of each offset to present the participant                        
 reps_per_offset_per_clip = 3; 
-%reps_per_offset_per_clip = 2;
+reps_per_offset_per_clip = 2;
 
 timeMe = true;
 n_breaks = 3;
@@ -40,6 +40,7 @@ train_reps_per_clip = 1;
 %Create subject string
 fileBase = string(datetime('now'),'yyyyMMdd_HH_mm_ss') + "__" + participant_ID;
 
+%calculate some numbers
 n_offsets = length(abs_offsets);
 n_clips = length(clipNames);
 n_trials = n_clips*n_offsets*reps_per_offset_per_clip;
@@ -49,7 +50,6 @@ n_trials = n_clips*n_offsets*reps_per_offset_per_clip;
 clips(n_clips) = AudioClip;                                                 %access with clips(clipIdx).property
 base_offsets = zeros(n_clips,1);                                               %access with base_offsets(clipIdx)
 rel_offsets = zeros(n_clips,n_offsets);                                     %access with rel_offsets(clipIdx, offsetIdx) 
-
 
 % create tables to store data
 raw_results_table = NaN(n_clips,n_offsets,train_reps_per_clip);    %access with raw_results_table(clipIdx, offsetIdx,repIdx) - each table is a repetition, each row is a clip, each col is a different offset 
@@ -89,7 +89,7 @@ curBlock = 1;
 %% Experiment Begin - Go through the clips
 fprintf("PILOT BEGINS: %s \n", fileBase);
 
-    try
+try
     %create gui
     gui = createResponseGUI();
     gui.trialText.String = sprintf("Participant: %s \n",participant_initials);
@@ -189,6 +189,7 @@ fprintf("PILOT BEGINS: %s \n", fileBase);
     disp("     ")
     
     %stop timer
+    elaspsedTime = NaN;
     if timeMe
         elaspsedTime = toc;
         fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
@@ -218,6 +219,7 @@ fprintf("PILOT BEGINS: %s \n", fileBase);
 catch ME
     disp("Experiment crashed — saving backup...");
 
+    elaspsedTime = NaN;
     if timeMe
         elaspsedTime = toc;
         fprintf("Experiment runtime: %.3f s \n", elaspsedTime);
