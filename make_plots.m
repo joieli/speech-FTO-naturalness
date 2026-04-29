@@ -1,15 +1,28 @@
 close all; clear; clc;
-subject4 = load("results\20260417_14_05_18__subject04_pilot.mat");
-subject5 = load("results\20260417_16_12_37__subject05_pilot.mat");
+resultsPath = "results";
+fileNames = [
+    "20260417_14_05_18__subject04_pilot.mat";
+    "20260417_16_12_37__subject05_pilot.mat";
+];
 
-all_results = zeros([size(subject4.raw_results_table),2]);
-all_results(:,:,:,1) = subject4.raw_results_table;
-all_results(:,:,:,2) = subject5.raw_results_table;
+n_participants = numel(fileNames);
+for partIdx = 1:n_participants
+    dataPath = fullfile(resultsPath, fileNames(partIdx));
+    data(partIdx) = load(dataPath);
+end
 
-base_offsets = subject4.base_offsets;
-abs_offsets = subject4.abs_offsets;
-rel_offsets = subject4.rel_offsets;
-clipNames = subject4.clipNames;
+all_results = zeros([size(data(1).raw_results_table),n_participants]);
+for partIdx = 1:n_participants
+    all_results(:,:,:,partIdx) = data(partIdx).raw_results_table;
+end
+%all_results(:,:,:,1) = subject4.raw_results_table;
+%all_results(:,:,:,2) = subject5.raw_results_table;
+
+
+base_offsets = data(1).base_offsets;
+abs_offsets = data(1).abs_offsets;
+rel_offsets = data(1).rel_offsets;
+clipNames = data(1).clipNames;
 
 %make x axis
 n_offsets = numel(abs_offsets);
@@ -19,7 +32,6 @@ for i = 1:n_offsets-1
 end
 
 n_clips = numel(clipNames);
-n_participants = size(all_results,4);
 %% Plots per clip
 means = mean(all_results,[3,4]); %averaging over each trial and each participant
 
@@ -59,19 +71,23 @@ for clipIdx = 1:n_clips
 end
 
 %% Plots per participant
-
 % plot against abs_offset, averaging across each clip
-means = mean(all_results, [3,1]); %averaging over each trial and each clip
+means = mean(all_results, 3); %averaging over each trial
 
 figure
 sgtitle(sprintf("Averaged across %d clips, against absolute offset", n_clips))
 for partIdx = 1:n_participants
     subplot(1,2,partIdx)
     hold on
-    plot(abs_x, means(:,1:end-1,1,partIdx), 'o-') % do not plot the last point because that averages across all the offsets
+    average = mean(means,1); %everage over each clip
+    plot(abs_x, average(:,1:end-1,1,partIdx),'-', LineWidth=1.5, DisplayName="average across clips") % do not plot the last point because that averages across all the offsets
+    for clipIdx = 1:n_clips
+        plot(abs_x, means(clipIdx,1:end-1,1,partIdx), 'o-', Color="#808080", HandleVisibility='off', LineWidth=0.5)
+    end
     xlabel("Absolute Offset")
     ylabel("Naturalness")
-    title(sprintf("Participant %d", partIdx))
+    legend()
+    title(data(partIdx).participant_ID)
     xlim([-100,2100])
     ylim([-0.25,1.25])
     hold off
@@ -85,10 +101,13 @@ sgtitle(sprintf("All %d clips, against relative offset", n_clips))
 for partIdx = 1:n_participants
     subplot(1,2,partIdx)
     hold on
-    scatter(rel_offsets, means(:,:,:,partIdx), 'o')
+    for clipIdx = 1:n_clips
+        scatter(rel_offsets(clipIdx,:), means(clipIdx,:,:,partIdx), 'o')
+    end
+    %ToDo: Regression
     xlabel("Relative Offset")
     ylabel("Naturalness")
-    title(sprintf("Participant %d", partIdx))
+    title(data(partIdx).participant_ID)
     xline(0, 'LineWidth',1)
     yline(0, 'LineWidth',1)
     ylim([-0.1,1.25])
@@ -98,26 +117,38 @@ end
 %% Plots overall
 
 % plot against absolute offset
-means = mean(all_results, [3,4,1]); %averaging over each trial, each participant, each clip
+means = mean(all_results, [3,1]); %averaging over each trial, each clip
 
 figure
-plot(abs_x, means(1:end-1), 'o-') % do not plot the last point because that averages across all the base offsets
+hold on
+average = mean(means,4); %everage over each participant
+plot(abs_x, average(1:end-1),'-', LineWidth=1.5, DisplayName="average across participants") % do not plot the last point because that averages across all the base offsets
+for partIdx = 1:n_participants
+    plot(abs_x, means(:,1:end-1,1,partIdx), 'o-', Color="#808080", HandleVisibility='off', LineWidth=0.5)
+end
 xlabel("Absolute Offset")
 ylabel("Naturalness")
+legend()
 title(sprintf("Averaged across %d clips and %d participants, against absolute offset", n_clips, n_participants))
 xlim([-100,2100])
 ylim([-0.25,1.25])
+hold off
 
 % plot against relative offset
 means = mean(all_results,[3,4]); %averaging over each trial and each participant
 
 figure
-scatter(rel_offsets', means', 'bo')
+hold on
+for clipIdx = 1:n_clips
+    scatter(rel_offsets(clipIdx,:), means(clipIdx,:), 'o')
+end
+%ToDo: Regression
 xlabel("Relative Offset")
 ylabel("Naturalness")
 title(sprintf("Averaged across %d participants, against relative offset", n_participants))
 xline(0, 'LineWidth',1)
 yline(0, 'LineWidth',1)
 ylim([-0.1,1.25])
+hold off
 
 %% plot elbow point vs base offset
