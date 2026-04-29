@@ -23,7 +23,7 @@ clipNames = ["F1F2_quiet_food_clip01","F1F2_quiet_food_clip05","F1F2_quiet_food_
 %parameters
 abs_offsets = {0,400,800,1200,1600,2000,"base"};             %absolute_offsets in ms, acesss with abs_offsets{offsetIdx} - curly brace because cell, add "base" on the end to also test the no aritificial offset condition
 abs_offsets = {0,100,300,500,800,1200,1600,2100,"base"};
-abs_offsets = {0,500,800,1200,1600,2000,"base"};
+abs_offsets = {0,100,200,400,2000,"base"};
 %abs_offsets = {2000,"base"};
 
 reps_per_offset_per_clip = 4;                                % how many repetitions of each offset to present the participant                        

@@ -22,5 +22,5 @@ function base_offset = getBaseOffset(audiopath, audio_clip_name)
     
     % Floor transfer time
     base_offset = T.onset_time(idx_second) - T.offset_time(idx_first);
-    base_offset = base_offset*1000;
+    base_offset = round(base_offset*1000);
 end

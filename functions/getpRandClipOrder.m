@@ -4,7 +4,7 @@ function order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip)
     % the same modulo
 
     n_trials = n_clips*n_offsets*reps_per_offset_per_clip;
-    if n_clips == 1
+    if n_clips < 4
         order = randperm(n_trials);
     else
         %order = zeros(1,n_trials);
@@ -14,6 +14,8 @@ function order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip)
         bag_idx = randi(n_trials,1);
         order(1) = bag(bag_idx);                % push that trial into the order
         prevClip = mod(bag(bag_idx),n_clips);   % save the clipNumber
+        prevClip2 = 0;
+        prevClip3 = 0;
         bag(bag_idx) = [];                      % remove trial from the bag
     
         % fill up the order
@@ -25,7 +27,7 @@ function order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip)
             curClip = mod(bag(bag_idx),n_clips);        % check the clipNumber
             attempts = 0;
             
-            while curClip == prevClip
+            while curClip == prevClip || curClip == prevClip2 || curClip == prevClip3
                 attempts = attempts + 1;
                 if attempts > bag_size*2
                     break;
@@ -39,6 +41,8 @@ function order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip)
             end
     
             order(i) = bag(bag_idx);                % add that trial into the order
+            prevClip3 = prevClip2;
+            prevClip2 = prevClip;
             prevClip = curClip;                     % update prevClip
             bag(bag_idx) = [];                      % remove trial from the bag
         end
@@ -55,11 +59,17 @@ function order = getpRandClipOrder(n_clips, n_offsets, reps_per_offset_per_clip)
                 if(attempts > 2*numel(order))
                     error("Too many attempts in creating order")
                 end
-                clip_idx = randi(numel(order)-2,1);
-                prevClip = mod(order(clip_idx),n_clips);     
+                clip_idx = randi(numel(order)-6,1)+2;
+
+                prevClip = mod(order(clip_idx),n_clips);
+                prevClip2 = mod(order(clip_idx-1), n_clips);
+                prevClip3 = mod(order(clip_idx-2), n_clips);
+
                 nextClip = mod(order(clip_idx+1),n_clips);
+                nextClip2 = mod(order(clip_idx+2),n_clips);
+                nextClip3 = mod(order(clip_idx+3), n_clips);
         
-                if prevClip ~= clip && nextClip ~= clip
+                if prevClip ~= clip && prevClip2 ~= clip && prevClip3 ~= clip && nextClip ~= clip && nextClip2 ~= clip && nextClip3 ~= clip
                     order = [order(1:clip_idx) bag(1) order(clip_idx+1:end)]; %put the clip in the order
                     bag(1) = [];        % get rid of that trial in the bag
                 end
